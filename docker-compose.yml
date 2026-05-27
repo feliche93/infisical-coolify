@@ -1,0 +1,74 @@
+services:
+  backend:
+    image: ${INFISICAL_IMAGE:-infisical/infisical:v0.160.5}
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    environment:
+      - SERVICE_URL_BACKEND_8080
+      - SERVICE_HEX_32_INFISICALENCRYPTIONKEY
+      - SERVICE_REALBASE64_32_INFISICALAUTHSECRET
+      - SITE_URL=${SERVICE_URL_BACKEND_8080}
+      - NODE_ENV=${NODE_ENV:-production}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-${SERVICE_HEX_32_INFISICALENCRYPTIONKEY}}
+      - AUTH_SECRET=${AUTH_SECRET:-${SERVICE_REALBASE64_32_INFISICALAUTHSECRET}}
+      - DB_CONNECTION_URI=postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-infisical}
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_PORT=${SMTP_PORT:-}
+      - SMTP_FROM_ADDRESS=${SMTP_FROM_ADDRESS:-}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-}
+      - INF_APP_CONNECTION_GITHUB_APP_CLIENT_ID=${INF_APP_CONNECTION_GITHUB_APP_CLIENT_ID:-}
+      - INF_APP_CONNECTION_GITHUB_APP_CLIENT_SECRET=${INF_APP_CONNECTION_GITHUB_APP_CLIENT_SECRET:-}
+      - INF_APP_CONNECTION_GITHUB_APP_SLUG=${INF_APP_CONNECTION_GITHUB_APP_SLUG:-}
+      - INF_APP_CONNECTION_GITHUB_APP_ID=${INF_APP_CONNECTION_GITHUB_APP_ID:-}
+      - INF_APP_CONNECTION_GITHUB_APP_PRIVATE_KEY=${INF_APP_CONNECTION_GITHUB_APP_PRIVATE_KEY:-}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/api/status || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    environment:
+      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli -h localhost -p 6379 ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=${POSTGRES_DB:-infisical}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h localhost -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  pg-data:
+  redis-data:

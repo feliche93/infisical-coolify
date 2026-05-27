@@ -7,7 +7,7 @@ This repo is intended for a side-by-side staging migration from the old Coolify 
 ## What This Compose Does
 
 - Pins Infisical with `INFISICAL_IMAGE` instead of using a stale floating `latest-postgres` image.
-- Uses Coolify's generated service URL for `SITE_URL`.
+- Uses an explicit public `SITE_URL`.
 - Keeps Postgres and Redis as sibling services.
 - Generates new `ENCRYPTION_KEY` and `AUTH_SECRET` defaults for fresh installs, while allowing explicit migration overrides.
 - Stores state in named Docker volumes: `pg-data` and `redis-data`.
@@ -18,6 +18,7 @@ For a brand-new instance, Coolify can generate the root secrets and database cre
 
 ```dotenv
 INFISICAL_IMAGE=infisical/infisical:v0.160.5
+SITE_URL=https://infisical.example.com
 SERVICE_USER_POSTGRES=<Coolify generated or chosen username>
 SERVICE_PASSWORD_POSTGRES=<Coolify generated or chosen password>
 POSTGRES_DB=infisical
@@ -31,17 +32,18 @@ Coolify must be `v4.0.0-beta.411` or newer for Git-based Compose magic environme
 
 1. Create a new Coolify Compose resource from this repo.
 2. Assign a staging domain, for example `https://infisical-staging.example.com:8080`.
-3. Set `ENCRYPTION_KEY` and `AUTH_SECRET` from the existing production service.
-4. Backup the current production database with `pg_dump`.
-5. Restore that dump into the new staging Postgres service.
-6. Deploy and watch the backend logs for successful migrations.
-7. Verify:
+3. Set `SITE_URL` to the public URL without the routing port, for example `https://infisical-staging.example.com`.
+4. Set `ENCRYPTION_KEY` and `AUTH_SECRET` from the existing production service.
+5. Backup the current production database with `pg_dump`.
+6. Restore that dump into the new staging Postgres service.
+7. Deploy and watch the backend logs for successful migrations.
+8. Verify:
    - `/api/status` returns OK.
    - UI login works.
    - Existing projects and machine identities are visible.
    - Universal Auth login works.
    - `GET /api/v4/secrets` works with a valid machine identity token.
-8. Cut over the production domain only after staging passes.
+9. Cut over the production domain only after staging passes.
 
 Keep the old Coolify service stopped but not deleted until production has been verified.
 

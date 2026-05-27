@@ -3,6 +3,14 @@ services:
     image: ${INFISICAL_IMAGE:-infisical/infisical:v0.160.5}
     pull_policy: always
     restart: unless-stopped
+    command:
+      - sh
+      - -lc
+      - |
+        if [ -n "$$INF_APP_CONNECTION_GITHUB_APP_PRIVATE_KEY" ]; then
+          export INF_APP_CONNECTION_GITHUB_APP_PRIVATE_KEY="$$(printf '%b' "$$INF_APP_CONNECTION_GITHUB_APP_PRIVATE_KEY")"
+        fi
+        exec ./standalone-entrypoint.sh
     depends_on:
       redis:
         condition: service_healthy

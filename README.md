@@ -52,3 +52,4 @@ Keep the old Coolify service stopped but not deleted until production has been v
 - Keep `.env` files and database dumps out of git.
 - Prefer pinned image tags over `latest`.
 - Redis can be rebuilt if needed; Postgres plus `ENCRYPTION_KEY` are the critical pieces.
+- If setting `INF_APP_CONNECTION_GITHUB_APP_PRIVATE_KEY` in Coolify, store it as a single line with literal `\n` sequences. The compose command converts it back to a multiline PEM at runtime.

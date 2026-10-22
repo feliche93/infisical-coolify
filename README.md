@@ -17,7 +17,7 @@ This repo is intended for a side-by-side staging migration from the old Coolify 
 For a brand-new instance, Coolify can generate the root secrets and database credentials from the compose magic variables. You can deploy with only the image pin and database name customized:
 
 ```dotenv
-INFISICAL_IMAGE=infisical/infisical:v0.160.5
+INFISICAL_IMAGE=infisical/infisical:v0.167.0
 SITE_URL=https://infisical.example.com
 SERVICE_USER_POSTGRES=<Coolify generated or chosen username>
 SERVICE_PASSWORD_POSTGRES=<Coolify generated or chosen password>

@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${INFISICAL_IMAGE:-infisical/infisical:v0.160.5}
+    image: ${INFISICAL_IMAGE:-infisical/infisical:v0.167.0}
     pull_policy: always
     restart: unless-stopped
     command:
